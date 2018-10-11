@@ -3,13 +3,16 @@
 # @Date    : 2018 Oct 11 
 # @Author  : WangSai
 
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.action_chains import ActionChains
-import time
 import random
+import time
 
+from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.wait import WebDriverWait
+
+
+def getRandomNumBetween60And1400():
+    return int(time.time() * 1000) % 1000 + random.randint(60, 400)
 
 # 如果有操作太快的提示框，点击确定
 def confirm(driver):
@@ -26,10 +29,10 @@ def get_element(driver, xpath):
     flag = True
     while flag:
         try:
-            tag = WebDriverWait(driver, 10).until(lambda x: x.find_element_by_xpath(xpath))
+            tag = WebDriverWait(driver, getRandomNumBetween60And1400).until(lambda x: x.find_element_by_xpath(xpath))
             return tag
         except:
-            time.sleep(random.randint(5, 10))
+            time.sleep(getRandomNumBetween60And1400)
             print('当前标签获取失败，刷新重试！')
             driver.refresh()
 
@@ -38,11 +41,11 @@ def get_elements(driver, xpath):
     flag = True
     while flag:
         try:
-            tags = WebDriverWait(driver, 10).until(lambda x: x.find_elements_by_xpath(xpath))
+            tags = WebDriverWait(driver, getRandomNumBetween60And1400).until(lambda x: x.find_elements_by_xpath(xpath))
             flag = False
             return tags
         except:
-            time.sleep(random.randint(10, 25))
+            time.sleep(getRandomNumBetween60And1400)
             print('当前标签集获取失败，刷新重试！')
             driver.refresh()
 
@@ -50,7 +53,7 @@ def get_elements(driver, xpath):
 # 点赞操作
 def praise(driver, element):
     ActionChains(driver).move_to_element(element).perform()
-    praise = WebDriverWait(element, 10).until(
+    praise = WebDriverWait(element, getRandomNumBetween60And1400).until(
         lambda x: x.find_element_by_xpath('div[@class="WB_feed_handle"]/div/ul/li[4]/a'))
     if praise.get_attribute('title') == '赞':
         confirm(driver)
@@ -60,36 +63,43 @@ def praise(driver, element):
         print('  -----成功点赞！')
     else:
         print('  -----已赞！')
-    time.sleep(random.randint(15, 35))
+    time.sleep(getRandomNumBetween60And1400)
 
 
 # 转发操作
 def repost(driver, element):
     flag = True
+    keysList = ["感谢老板,老板抽我.", "有没有我的呀～～", "期待,", "激动+", "紧张,", "hoho~~", "期待的拍拍小手,", "今天天气那么好，抽我呗", "祝所有小朋友开心快乐",
+                "元气满满的一天"]
+    addEleList = ["期待,", "紧张,", "迫切,", "努力ing,", "奋斗,", "拼搏,", "有没有我的啊,", "让我发个呆,", "凑字数,", "马云爸爸说要勇敢,", "马云爸爸说不要做咸鱼,",
+                  "希望世界和平,"]
     while flag:
         try:
             confirm(driver)
             ActionChains(driver).move_to_element(element).perform()
-            repost = WebDriverWait(element, 10).until(
+            repost = WebDriverWait(element, getRandomNumBetween60And1400).until(
                 lambda x: x.find_element_by_xpath('div[@class="WB_feed_handle"]/div/ul/li[2]/a'))
             confirm(driver)
             repost.click()
             while confirm(driver):
                 repost.click()
             textarea_path = '//div[@class="p_input p_textarea"]/textarea'
-            textarea = WebDriverWait(driver, 10).until(lambda x: x.find_element_by_xpath(textarea_path))
-            textarea.send_keys('老板,抽我! ')
-            time.sleep(random.randint(3, 9))
+            textarea = WebDriverWait(driver, getRandomNumBetween60And1400).until(
+                lambda x: x.find_element_by_xpath(textarea_path))
+            content = keysList[random.randint(0, len(keysList))] + " " + addEleList[random.randint(0, len(addEleList))]
+            textarea.send_keys(content)
+            time.sleep(getRandomNumBetween60And1400)
             checkbox_path = '//*[@id="forward_comment_opt_originLi"]'
-            checkbox = WebDriverWait(driver, 10).until(lambda x: x.find_element_by_xpath(checkbox_path))
+            checkbox = WebDriverWait(driver, getRandomNumBetween60And1400).until(
+                lambda x: x.find_element_by_xpath(checkbox_path))
             checkbox.click()
             time.sleep(1)
             path = '//div[@class="btn W_fr"]/a[@class="W_btn_a"]'
-            post = WebDriverWait(driver, 10).until(lambda x: x.find_element_by_xpath(path))
+            post = WebDriverWait(driver, getRandomNumBetween60And1400).until(lambda x: x.find_element_by_xpath(path))
             post.click()
             print('  -----完成转发！')
             flag = False
-            time.sleep(random.randint(5, 9))
+            time.sleep(getRandomNumBetween60And1400)
         except:
             print('<----转发失败！---->')
             text = element.find_element_by_xpath(
@@ -117,7 +127,6 @@ def add(element, follows):
                     follows.append(href)
                     print('  -----保存需要关注人的微博: ', a_tag.text)
 
-
 # 关注新用户操作
 def follow(driver, follows):
     print(' ----处理需要关注人列表！')
@@ -141,7 +150,7 @@ def follow(driver, follows):
         driver.switch_to.window(handles[1])
     print('    -----完成对关注人列表的关注！')
     follows = []
-    time.sleep(random.randint(7, 19))
+    time.sleep(getRandomNumBetween60And1400)
 
 
 def operation(driver, elements, last_time):
@@ -188,7 +197,7 @@ def operation(driver, elements, last_time):
         else:
             print('---以前的微博，忽略！---')
             break
-        time.sleep(random.randint(1, 5))
+        time.sleep(getRandomNumBetween60And1400)
     if i == m:
         print('<----抓取下一页---->')
         try:
@@ -196,7 +205,7 @@ def operation(driver, elements, last_time):
                 lambda x: x.find_element_by_xpath('//a[@class="page next S_txt1 S_line1"]'))
             ActionChains(driver).move_to_element(next_page).perform()
             next_page.click()
-            time.sleep(3)
+            time.sleep(getRandomNumBetween60And1400)
             loop(driver, last_time)
         except:
             print('找不到下一页标签！')
@@ -208,10 +217,10 @@ def operation(driver, elements, last_time):
 # 执行操作的循环
 def loop(driver, last_time):
     # 刷新出本页所有微博
-    for i in range(3):
+    for i in range(getRandomNumBetween60And1400):
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
         print('-----下拉加载页面！')
-        time.sleep(random.randint(5, 19))
+        time.sleep(getRandomNumBetween60And1400)
 
     # 获取当前页的所有用户微博
     # elements = driver.find_elements_by_xpath('//*[@id="v6_pl_content_homefeed"]/div/div[@class="WB_feed WB_feed_v3 WB_feed_v4"]/div')
@@ -233,7 +242,7 @@ def loop(driver, last_time):
 '''
 
 
-def init():
+def login():
     global driver, flag, f, last_time
     # 用Chrome浏览器打开登录页面
     driver = webdriver.Chrome()
@@ -245,20 +254,22 @@ def init():
     WebDriverWait(driver, 10).until(lambda x: x.find_element_by_id('password')).send_keys('password')
     WebDriverWait(driver, 10).until(lambda x: x.find_element_by_css_selector(
         '#vForm > div.main_cen > div > ul > li:nth-child(8) > div.btn_mod > input')).click()
-    print('---进入新浪个人中心---')
+    print('-step1--进入新浪个人中心---')
     # 进入我的微首页
     flag = True
+    retryTimes = 0
     while flag:
         try:
-            weibo = WebDriverWait(driver, 10).until(
+            weibo = WebDriverWait(driver, 20).until(
                 lambda x: x.find_element_by_xpath('/html/body/div[4]/div[1]/div[3]/ul/li[1]/a'))
             ActionChains(driver).move_to_element(weibo).perform()
             weibo.click()
-            print('---进入微博首页---')
+            print('-step2--进入微博首页---成功!')
             flag = False
         except:
-            time.sleep(random.randint(4, 30))
-            print('<----我的新浪首页加载失败，刷新重试---->')
+            retryTimes += 1
+            print('except: <----我的新浪首页加载失败，刷新重试{%d}次---->' % retryTimes)
+            time.sleep(getRandomNumBetween60And1400)
             driver.refresh()
     # 切换窗口到微博首页
     handles = driver.window_handles
@@ -279,15 +290,15 @@ def worker():
         flag = True
         while flag:
             try:
-                original = WebDriverWait(driver, 10).until(
+                original = WebDriverWait(driver, getRandomNumBetween60And1400).until(
                     lambda x: x.find_element_by_xpath('//ul[@class="tab W_fl clearfix"]/li[3]/a'))
                 ActionChains(driver).move_to_element(original).perform()
                 print('---进入原创页面---')
                 original.click()
                 flag = False
-                time.sleep(random.randint(5, 60))
+                time.sleep(getRandomNumBetween60And1400)
             except:
-                time.sleep(random.randint(5, 22))
+                time.sleep(getRandomNumBetween60And1400)
                 print('<----我的微博首页，原创微博页面加载失败，刷新重试---->')
                 driver.refresh()
 
@@ -298,11 +309,12 @@ def worker():
             f.write(str(last_time))
             print('更新last_time：', last_time)
 
+        # todo
         print('本次执行结束，休息30分钟后继续！')
         # 间隔半小时
-        time.sleep(60 * 30 * random.randint(1, 4))
+        time.sleep(60 * 30 * random.randint(1, 10))
 
 
 if __name__ == "__main__":
-    init()
+    login()
     worker()
